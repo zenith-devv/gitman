@@ -1,10 +1,10 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.1"
+const version = "0.2.1"
 
 proc printHelp() =
-  styledEcho styleBright, fgCyan, &"gitman v{version} - git package manager"
+  styledEcho styleBright, fgCyan, &"gitman v{version} - git package manager\n"
   echo "Usage:"
   echo "  gitman <command> [arguments]\n"
   echo "Commands:"
