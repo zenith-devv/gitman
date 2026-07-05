@@ -2,19 +2,20 @@ import std/[strutils, strformat, os, terminal]
 import networking, build, config, manager
 
 proc installCmd*(repo: string) =
-    let (repoUrl, repoName) = search(repo)
-    while true:
-        stdout.styledWrite(styleBright, fgWhite, "Continue installing? [Y/n]: ")
-        stdout.flushFile()
+    let (repoUrl, repoName, isUrl) = search(repo)
+    if not isUrl:
+        while true:
+            stdout.styledWrite(styleBright, fgWhite, "Continue installing? [Y/n]: ")
+            stdout.flushFile()
 
-        let choice = readLine(stdin).toLowerAscii()
+            let choice = readLine(stdin).toLowerAscii()
 
-        if choice == "y" or choice == "":
-            break
-        elif choice == "n":
-            quit(0)
-        else:
-            echo &"Invalid choice: {choice}"
+            if choice == "y" or choice == "":
+                break
+            elif choice == "n":
+                quit(0)
+            else:
+                echo &"Invalid choice: {choice}"
 
     clone(repoUrl)
     setCurrentDir(repoName.toLowerAscii())

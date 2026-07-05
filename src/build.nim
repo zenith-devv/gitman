@@ -79,6 +79,6 @@ proc buildRepo*() =
     elif loadedConfig.name.len != 0 and loadedConfig.version.len == 0:
         styledEcho styleBright, fgGreen, &"Finished building '{loadedConfig.name}'"
     elif loadedConfig.name.len == 0 and loadedConfig.version.len == 0 or loadedConfig.name.len == 0 and loadedConfig.version.len != 0:
-        styledEcho styleBright, fgGreen, "Finished building repo"
+        styledEcho styleBright, fgGreen, "Finished building repository"
     
 

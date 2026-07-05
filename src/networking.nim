@@ -1,6 +1,6 @@
-import std/[httpclient, json, strformat, strutils, terminal]
+import std/[httpclient, uri, json, strformat, strutils, terminal]
 
-proc search*(query: string): (string, string) =
+proc search*(query: string): (string, string, bool) =
     if query.len == 0:
         styledEcho styleBright, fgRed, "Error: Please specify a search query."
         quit(1)
@@ -11,7 +11,14 @@ proc search*(query: string): (string, string) =
     defer: client.close()
     client.headers = newHttpHeaders({"User-Agent": "gitman"})
     
-    if query.contains('/'):
+    if query.contains("://"):
+        let path = parseUri(query).path 
+        let parts = path.split('/')        
+        var repoName = parts[^1]
+        if repoName == "" and parts.len > 1:
+            repoName = parts[^2]
+        return (query, repoName, true)
+    elif query.contains('/'):
         let parts = query.split('/')
         let user = parts[0]
         let repo = parts[1]    
@@ -37,7 +44,6 @@ proc search*(query: string): (string, string) =
                 quit(1)
             repoData = jsonNode["items"][0]
 
-        # Wyciąganie danych – teraz zawsze bezpiecznie z repoData
         let repoName = repoData["name"].getStr().toLowerAscii
         let repoFullName = repoData["full_name"].getStr()
         let description = if repoData["description"].kind == JNull: "No description provided." else: repoData["description"].getStr()
@@ -49,7 +55,7 @@ proc search*(query: string): (string, string) =
         styledEcho styleBright, fgCyan, "URL           ", fgWhite, &"{repoUrl}"
         styledEcho styleBright, fgCyan, "Stars         ", fgWhite, &"{stargazersCount}\n"
 
-        return (repoUrl, repoName)
+        return (repoUrl, repoName, false)
         
     except Exception as e:
         if query.contains('/') and "404" in e.msg:
