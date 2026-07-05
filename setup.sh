@@ -1,5 +1,4 @@
 #!/bin/bash
 mkdir -p ~/.local/share/gitman/repos
-nimble install -y
-nimble build -d:release -d:ssl --debug
-mv ./main $HOME/.local/bin/gitman
+nimble install --depsOnly
+nim c -d:release -d:ssl -o:"$HOME/.local/bin/gitman" src/main.nim
