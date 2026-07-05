@@ -5,26 +5,44 @@ proc search*(query: string): (string, string) =
         styledEcho styleBright, fgRed, "Error: Please specify a search query."
         quit(1)
         
+    var url: string
+    var isDirectRepo = false
     let client = newHttpClient()
     defer: client.close()
     client.headers = newHttpHeaders({"User-Agent": "gitman"})
-    let url = &"https://api.github.com/search/repositories?q={query}"
+    
+    if query.contains('/'):
+        let parts = query.split('/')
+        let user = parts[0]
+        let repo = parts[1]    
+        url = "https://api.github.com/repos/" & user & "/" & repo
+        isDirectRepo = true
+    else:
+        url = &"https://api.github.com/search/repositories?q={query}"
+
     styledEcho styleBright, fgCyan, &"Searching for '{query}'...\n"
 
     try:
         let response = client.getContent(url)
         let jsonNode = parseJson(response)
-        let totalCount = jsonNode["total_count"].getInt()
-        if totalCount == 0:
-            styledEcho styleBright, fgRed, &"'{query}' was not found"
-            quit(1)
+        
+        var repoData: JsonNode
 
-        let firstItem = jsonNode["items"][0]
-        let repoName = firstItem["name"].getStr.toLowerAscii
-        let repoFullName = firstItem["full_name"].getStr()
-        let description = if firstItem["description"].kind == JNull: "No description provided." else: firstItem["description"].getStr()
-        let repoUrl = firstItem["html_url"].getStr()
-        let stargazersCount = firstItem["stargazers_count"].getInt()
+        if isDirectRepo:
+            repoData = jsonNode
+        else:
+            let totalCount = jsonNode["total_count"].getInt()
+            if totalCount == 0:
+                styledEcho styleBright, fgRed, &"'{query}' was not found"
+                quit(1)
+            repoData = jsonNode["items"][0]
+
+        # Wyciąganie danych – teraz zawsze bezpiecznie z repoData
+        let repoName = repoData["name"].getStr().toLowerAscii
+        let repoFullName = repoData["full_name"].getStr()
+        let description = if repoData["description"].kind == JNull: "No description provided." else: repoData["description"].getStr()
+        let repoUrl = repoData["html_url"].getStr()
+        let stargazersCount = repoData["stargazers_count"].getInt()
 
         styledEcho styleBright, fgCyan, "Full name     ", fgWhite, &"{repoFullName}"
         styledEcho styleBright, fgCyan, "Description   ", fgWhite, &"{description}"
@@ -32,6 +50,10 @@ proc search*(query: string): (string, string) =
         styledEcho styleBright, fgCyan, "Stars         ", fgWhite, &"{stargazersCount}\n"
 
         return (repoUrl, repoName)
+        
     except Exception as e:
-        styledEcho styleBright, fgRed, "Error: ", resetStyle, e.msg
+        if query.contains('/') and "404" in e.msg:
+            styledEcho styleBright, fgRed, &"'{query}' was not found"
+        else:
+            styledEcho styleBright, fgRed, "Error: ", resetStyle, e.msg
         quit(1)

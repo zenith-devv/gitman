@@ -70,10 +70,14 @@ proc runStage*(cmds: seq[string], stage: StageKind) =
 proc buildRepo*() =
     loadConfig()
     installDepends()
+
     if loadedConfig.name.len != 0:
         styledEcho styleBright, fgMagenta, &"Starting to build {loadedConfig.name} {loadedConfig.version}"
-    else:
+    elif loadedConfig.name.len != 0 and loadedConfig.version.len == 0:
+        styledEcho styleBright, fgMagenta, &"Starting to build {loadedConfig.name}"
+    elif loadedConfig.name.len == 0 and loadedConfig.version.len == 0:
         styledEcho styleBright, fgMagenta, "Starting to build"
+        
     runStage(loadedConfig.prepare, skPrepare)
     runStage(loadedConfig.build, skBuild)
     runStage(loadedConfig.check, skCheck)
