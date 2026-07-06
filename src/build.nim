@@ -62,10 +62,20 @@ proc runStage*(cmds: seq[string], stage: StageKind) =
 
     styledEcho styleBright, fgMagenta, &"Running stage '{$stage}'"
     for cmd in cmds:
-        styledEcho styleBright, fgWhite, &"> {cmd}"
-        if execCmd(cmd) != 0:
-            styledEcho styleBright, fgRed, &"Error: stage '{$stage}' failed"
-            quit(1)
+        let trimmed = cmd.strip()
+        styledEcho styleBright, fgWhite, &"> {trimmed}"
+        
+        if trimmed.startsWith("cd "):
+            let targetDir = trimmed["cd ".len .. ^1].strip()
+            try:
+                setCurrentDir(targetDir)
+            except OSError:
+                styledEcho styleBright, fgRed, &"Error: directory '{targetDir}' does not exist"
+                quit(1)
+        else:
+            if execCmd(trimmed) != 0:
+                styledEcho styleBright, fgRed, &"Error: stage '{$stage}' failed"
+                quit(1)
 
 proc buildRepo*() =
     loadConfig()
