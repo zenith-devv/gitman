@@ -39,5 +39,8 @@ proc updateCmd*() =
 proc listCmd*() =
     listRepos()
 
+proc enterCmd*(repo: string) =
+    enterRepo(repo)
+
 proc searchCmd*(query: string) =
     discard search(query)

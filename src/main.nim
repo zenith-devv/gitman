@@ -1,19 +1,20 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.3.1"
+const version = "0.4"
 
 proc printHelp() =
-  styledEcho styleBright, fgCyan, &"gitman v{version} - git package manager\n"
+  styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"
   echo "Usage:"
   echo "  gitman <command> [arguments]\n"
   echo "Commands:"
-  echo "  install <package>  Installs a package"
-  echo "  remove <package>   Removes an installed package"
-  echo "  build              Builds a package using gitman.yaml"
-  echo "  update             Pulls changes and rebuilds all packages"
-  echo "  list               Lists all installed packages"
-  echo "  search <query>     Searches for a package"
+  echo "  install <repo>     Installs a repo"
+  echo "  remove <repo>      Removes an installed repo"
+  echo "  build              Builds a repo using gitman.yaml"
+  echo "  update             Pulls changes and rebuilds all repos"
+  echo "  list               Lists all installed repos"
+  echo "  search <query>     Searches for a repo"
+  echo "  enter <repo>       Enter the directory of the installed repo"
   echo "  help               Displays this help message"
 
 proc main() =
@@ -22,33 +23,27 @@ proc main() =
         quit(0)
 
     let command = paramStr(1)
-    let package = if paramCount() >= 2: paramStr(2) else: ""
+    let repo = if paramCount() >= 2: paramStr(2) else: ""
 
     case command
     of "install":
-        installCmd(package)
-
+        installCmd(repo)
     of "remove":
-        removeCmd(package)
-
+        removeCmd(repo)
     of "build":
         buildCmd()
-
     of "update":
         updateCmd()
-    
     of "config":
         configCmd()
-
     of "list":
         listCmd()
-
     of "search":
-        searchCmd(package)
-
-    of "help", "-h", "--help":
+        searchCmd(repo)
+    of "enter":
+        enterCmd(repo)
+    of "help":
         printHelp()
-
     else:
         styledEcho styleBright, fgRed, &"Error: Unknown command '{command}'"
         quit(1)

@@ -3,7 +3,7 @@ import build
 
 proc removeRepo*(repoName: string) =
     if repoName == "":
-        styledEcho styleBright, fgRed, "Error: no package specified"
+        styledEcho styleBright, fgRed, "Error: no repo specified"
         quit(1)
 
     let lowerName = repoName.toLowerAscii()
@@ -66,6 +66,22 @@ proc listRepos*() =
         inc(count)
 
     if count == 0:
-        styledEcho styleBright, fgWhite, "No packages installed yet."
+        styledEcho styleBright, fgWhite, "No repos installed yet."
     else:
-        styledEcho styleBright, fgCyan, &"\nTotal: {count} package(s) installed."
+        styledEcho styleBright, fgCyan, &"\nTotal: {count} repo(s) installed."
+
+proc enterRepo*(repoName: string) =
+    let target = repoName.toLowerAscii()
+    for repoPath in walkDirs(reposDir / "*"):
+        let foundRepo = extractFilename(repoPath)
+        let foundRepoLower = foundRepo.toLowerAscii()
+        if foundRepoLower.contains(target):
+            styledEcho styleBright, fgCyan, &"Entering {foundRepo}"
+            let targetRepo = reposDir / foundRepo
+            setCurrentDir(targetRepo)
+            let userShell = getEnv("SHELL", "/bin/bash")
+            discard execProcesses([userShell], options = {poParentStreams, poInteractive})
+            quit(0)
+    
+    styledEcho styleBright, fgRed, &"Error: '{repoName}' was not found"
+

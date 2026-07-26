@@ -1,5 +1,7 @@
 #!/bin/bash
-mkdir -p ~/.local/share/gitman/repos
+set -e
+mkdir -p $HOME/.local/share/gitman/repos
+mkdir -p $HOME/.local/bin
 nimble install --depsOnly -y
-nim c -d:release -d:ssl -o:"$HOME/.local/bin/gitman" src/main.nim
+nim c -f -d:release -d:ssl --hint[XCannotRaiseY]:off -o:"$HOME/.local/bin/gitman" src/main.nim
 echo "Finished installing gitman. Make sure to add ~/.local/bin to your PATH."
