@@ -31,7 +31,7 @@ proc installDepends*() =
     let allDeps = loadedConfig.depends.join(" ")
     let (baseCmd, needsRoot) = foreignDepInstallCmd(firstDep)
 
-    if baseCmd == "":
+    if baseCmd == "" or baseCmd.contains("<your package manager here>"):
         styledEcho styleBright, fgRed, "Error: could not determine package manager for this distro"
         echo &"Install those dependencies manually: {allDeps}"
         quit(1)
@@ -44,13 +44,13 @@ proc installDepends*() =
         fullCmd = fullCmd.replace("zypper install", "zypper install -y")
     elif fullCmd.contains("apt"):
         fullCmd = fullCmd.replace("apt install", "apt install -y")
-    elif fullCmd.contains("emerge"):
-        fullCmd = fullCmd.replace("emerge", "emerge --noreplace")
     elif fullCmd.contains("pkg"):
         fullCmd = fullCmd.replace("pkg install", "pkg install -y")
 
     if needsRoot:
         fullCmd = "sudo " & fullCmd
+
+    styledEcho styleBright, fgWhite, &"> {fullCmd}"
 
     if execCmd(fullCmd) != 0:
         styledEcho styleBright, fgRed, "Error: failed to install dependencies"

@@ -1,7 +1,7 @@
 # Package
 
-version       = "0.4"
-author        = "zenith-devv"
+version       = "0.4.1"
+author        = "Tomasz Maciejewski"
 description   = "A small manager for github repositories written in Nim"
 license       = "MIT"
 srcDir        = "src"
