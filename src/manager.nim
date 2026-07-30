@@ -37,13 +37,22 @@ proc update*() =
         let repoName = extractFilename(repoPath)
         styledEcho styleBright, fgCyan, &"Entering {repoName}"
         setCurrentDir(repoPath)
+
+        styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
+        let oldCommit = execProcess("git rev-parse HEAD").strip()
         styledEcho styleBright, fgWhite, "> git pull"
         let gitStatus = execCmd("git pull")
-
+        
         if gitStatus != 0:
             styledEcho styleBright, fgYellow, &"Could not pull {repoName}. Skipping"
             continue
-
+        
+        styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
+        let newCommit = execProcess("git rev-parse HEAD").strip()
+        if oldCommit == newCommit:
+            styledEcho styleBright, fgCyan, "No need to rebuild."
+            continue
+        
         let configPath = repoPath / "gitman.yaml" 
         if fileExists(configPath):
             buildRepo()
@@ -51,6 +60,37 @@ proc update*() =
             styledEcho styleBright, fgYellow, "Config file was not found. Source updated."
     
     styledEcho styleBright, fgGreen, "Finished updating repos"
+
+proc updateGitman*() =
+    if not dirExists(reposDir):
+        styledEcho styleBright, fgRed, &"Error: {reposDir} was not found"
+        return
+    
+    setCurrentDir(reposDir)
+    styledEcho styleBright, fgCyan, "Updating gitman..."
+    setCurrentDir("gitman")
+
+    styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
+    let oldCommit = execProcess("git rev-parse HEAD").strip()
+    styledEcho styleBright, fgWhite, "> git pull"
+    let gitStatus = execCmd("git pull")
+    
+    if gitStatus != 0:
+        styledEcho styleBright, fgRed, "Error: failed to pull newest commit"
+    
+    styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
+    let newCommit = execProcess("git rev-parse HEAD").strip()
+    if oldCommit == newCommit:
+        styledEcho styleBright, fgCyan, "No need to rebuild."
+    else:
+        let configPath = "gitman" / "gitman.yaml" 
+        if fileExists(configPath):
+            buildRepo()
+        else:
+            styledEcho styleBright, fgYellow, "Config file was not found. Source updated."
+        
+    styledEcho styleBright, fgGreen, "Finished updating gitman"
+
 
 proc listRepos*() =
     if not dirExists(reposDir):

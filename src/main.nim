@@ -1,7 +1,7 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.5"
+const version = "0.6"
 
 proc printHelp() =
   styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"
@@ -15,6 +15,7 @@ proc printHelp() =
   echo "  list               Lists all installed repos"
   echo "  search <query>     Searches for a repo"
   echo "  enter <repo>       Enter the directory of the installed repo"
+  echo "  self-update        Pull the newest commit of gitman and rebuild it"
   echo "  help               Displays this help message"
 
 proc main() =
@@ -42,6 +43,8 @@ proc main() =
         searchCmd(repo)
     of "enter":
         enterCmd(repo)
+    of "self-update":
+        selfUpdateCmd()
     of "help":
         printHelp()
     else:

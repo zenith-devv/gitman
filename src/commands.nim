@@ -42,5 +42,8 @@ proc listCmd*() =
 proc enterCmd*(repo: string) =
     enterRepo(repo)
 
+proc selfUpdateCmd*() =
+    updateGitman()
+
 proc searchCmd*(query: string) =
     discard search(query)

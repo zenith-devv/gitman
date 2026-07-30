@@ -1,0 +1,11 @@
+name: "gitman"
+version: "v0.6"
+tools:
+  - nim
+  - nimble
+prepare:
+  - nimble install --depsOnly -y
+build: 
+  - nim c -f -d:release -d:ssl -o:"$HOME/.local/bin/gitman" src/main.nim
+check: []
+install: []
