@@ -1,7 +1,7 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.6.1"
+const version = "0.7"
 
 proc printHelp() =
   styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"

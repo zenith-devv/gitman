@@ -5,7 +5,7 @@ const configName* = "gitman.yaml"
 type Config* = object
     name*: string
     version*: string
-    tools*: seq[string]
+    depends*: seq[string]
     prepare*: seq[string]
     build*: seq[string]
     check*: seq[string]

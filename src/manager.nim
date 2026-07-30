@@ -127,7 +127,7 @@ proc enterRepo*(repoName: string) =
         let foundRepo = extractFilename(repoPath)
         let foundRepoLower = foundRepo.toLowerAscii()
         if foundRepoLower.contains(target):
-            styledEcho styleBright, fgCyan, &"Entering {foundRepo}"
+            styledEcho styleBright, fgCyan, &"Entering '{foundRepo}'"
             let targetRepo = reposDir / foundRepo
             setCurrentDir(targetRepo)
             let userShell = getEnv("SHELL", "/bin/bash")

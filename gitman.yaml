@@ -1,8 +1,6 @@
 name: "gitman"
-version: "v0.6.1"
-tools:
-  - nim
-  - nimble
+version: "v0.7"
+depends: []
 prepare:
   - nimble install --depsOnly -y
 build: 

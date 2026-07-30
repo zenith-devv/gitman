@@ -21,19 +21,27 @@ proc clone*(url: string) =
         styledEcho styleBright, fgRed, &"Error: Failed to clone repository"
         quit(1)
 
-proc checkNeededTools*() =
-    if loadedConfig.tools.len == 0:
+proc showDepends*() =
+    if loadedConfig.depends.len == 0:
         return
 
-    styledEcho styleBright, fgCyan, "Checking needed tools..."
+    styledEcho styleBright, fgYellow, "Needed dependencies:\n"
 
-    for tool in loadedConfig.tools:
-        echo &"  Looking for {tool}..."
-        let res = findExe(tool)
-        echo &"    {res}"
-        if res == "":
-            styledEcho styleBright, fgRed, &"Error: {tool} was not found installed"
-            quit(1)
+    for depend in loadedConfig.depends:
+        echo &"  - {depend}\n"
+    
+    while true:
+        stdout.styledWrite(styleBright, fgWhite, "Proceed building? [Y/n]: ")
+        stdout.flushFile()
+
+        let choice = readLine(stdin).toLowerAscii()
+
+        if choice == "y" or choice == "":
+            break
+        elif choice == "n":
+            quit(0)
+        else:
+            echo &"Invalid choice: {choice}"
 
 proc runStage*(cmds: seq[string], stage: StageKind): bool =
     if cmds.len == 0:
@@ -61,7 +69,7 @@ proc runStage*(cmds: seq[string], stage: StageKind): bool =
 proc buildRepo*() =
     var ranAnyStage = false
     loadConfig()
-    checkNeededTools()
+    showDepends()
     if runStage(loadedConfig.prepare, skPrepare): ranAnyStage = true
     if runStage(loadedConfig.build, skBuild):     ranAnyStage = true
     if runStage(loadedConfig.check, skCheck):     ranAnyStage = true
