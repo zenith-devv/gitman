@@ -5,7 +5,7 @@ const configName* = "gitman.yaml"
 type Config* = object
     name*: string
     version*: string
-    depends*: seq[string]
+    tools*: seq[string]
     prepare*: seq[string]
     build*: seq[string]
     check*: seq[string]
@@ -29,7 +29,7 @@ proc createConfig*() =
 
 proc loadConfig*(filePath: string = configName) =
     if not fileExists(filePath):
-        styledEcho styleBright, fgRed, &"Error: {configName} not found at {filePath}"
+        styledEcho styleBright, fgRed, &"Error: {configName} not found"
         quit(1)
 
     var s = openFileStream(filePath, fmRead)

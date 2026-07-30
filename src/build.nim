@@ -1,4 +1,4 @@
-import std/[strformat, strutils, os, osproc, terminal, distros]
+import std/[strformat, strutils, os, osproc, terminal]
 import config
 
 let reposDir* = getHomeDir() / ".local/share/gitman/repos"
@@ -21,44 +21,23 @@ proc clone*(url: string) =
         styledEcho styleBright, fgRed, &"Error: Failed to clone repository"
         quit(1)
 
-proc installDepends*() =
-    if loadedConfig.depends.len == 0:
+proc checkNeededTools*() =
+    if loadedConfig.tools.len == 0:
         return
 
-    styledEcho styleBright, fgCyan, "Installing needed dependencies..."
+    styledEcho styleBright, fgCyan, "Checking needed tools..."
 
-    let firstDep = loadedConfig.depends[0]
-    let allDeps = loadedConfig.depends.join(" ")
-    let (baseCmd, needsRoot) = foreignDepInstallCmd(firstDep)
+    for tool in loadedConfig.tools:
+        echo &"  Looking for {tool}..."
+        let res = findExe(tool)
+        echo &"    {res}"
+        if res == "":
+            styledEcho styleBright, fgRed, &"Error: {tool} was not found installed"
+            quit(1)
 
-    if baseCmd == "" or baseCmd.contains("<your package manager here>"):
-        styledEcho styleBright, fgRed, "Error: could not determine package manager for this distro"
-        echo &"Install those dependencies manually: {allDeps}"
-        quit(1)
-
-    var fullCmd = baseCmd.replace(firstDep, allDeps)
-
-    if fullCmd.contains("pacman"):
-        fullCmd = fullCmd.replace("pacman -S", "pacman -S --needed --noconfirm")
-    elif fullCmd.contains("zypper"):
-        fullCmd = fullCmd.replace("zypper install", "zypper install -y")
-    elif fullCmd.contains("apt"):
-        fullCmd = fullCmd.replace("apt install", "apt install -y")
-    elif fullCmd.contains("pkg"):
-        fullCmd = fullCmd.replace("pkg install", "pkg install -y")
-
-    if needsRoot:
-        fullCmd = "sudo " & fullCmd
-
-    styledEcho styleBright, fgWhite, &"> {fullCmd}"
-
-    if execCmd(fullCmd) != 0:
-        styledEcho styleBright, fgRed, "Error: failed to install dependencies"
-        quit(1)
-
-proc runStage*(cmds: seq[string], stage: StageKind) =
+proc runStage*(cmds: seq[string], stage: StageKind): bool =
     if cmds.len == 0:
-        return
+        return false
 
     styledEcho styleBright, fgMagenta, &"Running stage '{$stage}'"
     for cmd in cmds:
@@ -77,13 +56,21 @@ proc runStage*(cmds: seq[string], stage: StageKind) =
                 styledEcho styleBright, fgRed, &"Error: stage '{$stage}' failed"
                 quit(1)
 
+        return true
+
 proc buildRepo*() =
+    var ranAnyStage = false
     loadConfig()
-    installDepends()
-    runStage(loadedConfig.prepare, skPrepare)
-    runStage(loadedConfig.build, skBuild)
-    runStage(loadedConfig.check, skCheck)
-    runStage(loadedConfig.install, skInstall)
+    checkNeededTools()
+    if runStage(loadedConfig.prepare, skPrepare): ranAnyStage = true
+    if runStage(loadedConfig.build, skBuild):     ranAnyStage = true
+    if runStage(loadedConfig.check, skCheck):     ranAnyStage = true
+    if runStage(loadedConfig.install, skInstall): ranAnyStage = true
+
+    if not ranAnyStage:
+        styledEcho styleBright, fgGreen, "All stages are empty. Nothing to do."
+        quit(0)
+        
     if loadedConfig.name.len != 0 and loadedConfig.version.len != 0:
         styledEcho styleBright, fgGreen, &"Finished building '{loadedConfig.name} {loadedConfig.version}'"
     elif loadedConfig.name.len != 0 and loadedConfig.version.len == 0:
