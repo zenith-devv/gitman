@@ -39,7 +39,7 @@ proc runStage*(cmds: seq[string], stage: StageKind): bool =
     if cmds.len == 0:
         return false
 
-    styledEcho styleBright, fgMagenta, &"Running stage '{$stage}'"
+    styledEcho styleBright, fgMagenta, &"Running stage {$stage}"
     for cmd in cmds:
         let trimmed = cmd.strip()
         styledEcho styleBright, fgWhite, &"> {trimmed}"
@@ -53,7 +53,7 @@ proc runStage*(cmds: seq[string], stage: StageKind): bool =
                 quit(1)
         else:
             if execCmd(trimmed) != 0:
-                styledEcho styleBright, fgRed, &"Error: stage '{$stage}' failed"
+                styledEcho styleBright, fgRed, &"Error: stage {$stage} failed"
                 quit(1)
 
         return true

@@ -44,7 +44,7 @@ proc search*(query: string): (string, string, bool) =
                 quit(1)
             repoData = jsonNode["items"][0]
 
-        let repoName = repoData["name"].getStr().toLowerAscii
+        let repoName = repoData["name"].getStr()
         let repoFullName = repoData["full_name"].getStr()
         let description = if repoData["description"].kind == JNull: "No description provided." else: repoData["description"].getStr()
         let repoUrl = repoData["html_url"].getStr()

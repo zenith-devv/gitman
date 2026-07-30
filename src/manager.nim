@@ -6,26 +6,37 @@ proc removeRepo*(repoName: string) =
         styledEcho styleBright, fgRed, "Error: no repo specified"
         quit(1)
 
-    let lowerName = repoName.toLowerAscii()
-    let targetBin = binDir / lowerName
-    let targetRepo = reposDir / lowerName
+    let lowerTarget = repoName.toLowerAscii()
+    var foundPath = ""
 
-    var removedAnything = false
+    for kind, path in walkDir(reposDir):
+        if kind in {pcDir, pcLinkToDir}:
+            let dirName = path.extractFilename()
+            if dirName.toLowerAscii() == lowerTarget:
+                foundPath = path
+                break
 
-    if fileExists(targetBin):
-        styledEcho styleBright, fgCyan, &"Removing executable: {lowerName}"
-        removeFile(targetBin)
-        removedAnything = true
+    if foundPath != "" and dirExists(foundPath):
+        let actualName = foundPath.extractFilename()
+        while true:
+            stdout.styledWrite(styleBright, fgWhite, &"Confirm removing '{actualName}'? [Y/n]: ")
+            stdout.flushFile()
 
-    if dirExists(targetRepo):
-        styledEcho styleBright, fgCyan, &"Removing source: {lowerName}"
-        removeDir(targetRepo)
-        removedAnything = true
+            let choice = readLine(stdin).toLowerAscii()
 
-    if removedAnything:
-        styledEcho styleBright, fgGreen, &"Successfully removed {lowerName}"
+            if choice == "y" or choice == "":
+                break
+            elif choice == "n":
+                quit(0)
+            else:
+                echo &"Invalid choice: {choice}"
+
+        styledEcho styleBright, fgCyan, &"Removing source: {actualName}"
+        removeDir(foundPath)
+        styledEcho styleBright, fgGreen, &"Successfully removed '{actualName}'"
     else:
-        styledEcho styleBright, fgRed, &"Error: '{lowerName}' was not found"
+        styledEcho styleBright, fgRed, &"Error: '{repoName}' was not found"
+        quit(1)
 
 proc update*() =
     if not dirExists(reposDir):
@@ -35,7 +46,7 @@ proc update*() =
     styledEcho styleBright, fgCyan, "Updating repositories..."
     for repoPath in walkDirs(reposDir / "*"):
         let repoName = extractFilename(repoPath)
-        styledEcho styleBright, fgCyan, &"Entering {repoName}"
+        styledEcho styleBright, fgCyan, &"Entering '{repoName}'"
         setCurrentDir(repoPath)
 
         styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
@@ -44,7 +55,7 @@ proc update*() =
         let gitStatus = execCmd("git pull")
         
         if gitStatus != 0:
-            styledEcho styleBright, fgYellow, &"Could not pull {repoName}. Skipping"
+            styledEcho styleBright, fgYellow, &"Could not pull '{repoName}'. Skipping"
             continue
         
         styledEcho styleBright, fgWhite, "> git rev-parse HEAD"

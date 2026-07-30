@@ -1,5 +1,5 @@
 name: "gitman"
-version: "v0.6"
+version: "v0.6.1"
 tools:
   - nim
   - nimble
