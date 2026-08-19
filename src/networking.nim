@@ -2,7 +2,7 @@ import std/[httpclient, uri, json, strformat, strutils, terminal]
 
 proc search*(query: string): (string, string, bool) =
     if query.len == 0:
-        styledEcho styleBright, fgRed, "Error: Please specify a search query."
+        styledEcho styleBright, fgRed, "Please specify a search query."
         quit(1)
         
     var url: string
@@ -61,5 +61,5 @@ proc search*(query: string): (string, string, bool) =
         if query.contains('/') and "404" in e.msg:
             styledEcho styleBright, fgRed, &"'{query}' was not found"
         else:
-            styledEcho styleBright, fgRed, "Error: ", resetStyle, e.msg
+            styledEcho styleBright, fgRed, resetStyle, e.msg
         quit(1)

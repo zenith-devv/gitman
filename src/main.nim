@@ -1,7 +1,7 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.7"
+const version = "0.8"
 
 proc printHelp() =
   styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"
@@ -48,7 +48,7 @@ proc main() =
     of "help":
         printHelp()
     else:
-        styledEcho styleBright, fgRed, &"Error: Unknown command '{command}'"
+        styledEcho styleBright, fgRed, &"Unknown command '{command}'"
         quit(1)
 
 if isMainModule:

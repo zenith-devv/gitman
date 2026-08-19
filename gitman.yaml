@@ -1,9 +1,17 @@
 name: "gitman"
-version: "v0.7"
-depends: []
+version: "v0.8"
 prepare:
   - nimble install --depsOnly -y
 build: 
   - nim c -f -d:release -d:ssl -o:"$HOME/.local/bin/gitman" src/main.nim
 check: []
 install: []
+depends:
+  apt: []
+  pacman: []
+  dnf: []
+  zypper: []
+  apk: []
+  portage: []
+  xbps: []
+  pkg: []

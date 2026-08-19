@@ -3,7 +3,7 @@ import build
 
 proc removeRepo*(repoName: string) =
     if repoName == "":
-        styledEcho styleBright, fgRed, "Error: no repo specified"
+        styledEcho styleBright, fgRed, "no repo specified"
         quit(1)
 
     let lowerTarget = repoName.toLowerAscii()
@@ -35,17 +35,21 @@ proc removeRepo*(repoName: string) =
         removeDir(foundPath)
         styledEcho styleBright, fgGreen, &"Successfully removed '{actualName}'"
     else:
-        styledEcho styleBright, fgRed, &"Error: '{repoName}' was not found"
+        styledEcho styleBright, fgRed, &"'{repoName}' was not found"
         quit(1)
 
 proc update*() =
     if not dirExists(reposDir):
-        styledEcho styleBright, fgRed, &"Error: {reposDir} was not found"
+        styledEcho styleBright, fgRed, &"{reposDir} was not found"
         return
 
     styledEcho styleBright, fgCyan, "Updating repositories..."
     for repoPath in walkDirs(reposDir / "*"):
         let repoName = extractFilename(repoPath)
+
+        if repoName == "gitman":
+            continue
+
         styledEcho styleBright, fgCyan, &"Entering '{repoName}'"
         setCurrentDir(repoPath)
 
@@ -74,7 +78,7 @@ proc update*() =
 
 proc updateGitman*() =
     if not dirExists(reposDir):
-        styledEcho styleBright, fgRed, &"Error: {reposDir} was not found"
+        styledEcho styleBright, fgRed, &"{reposDir} was not found"
         return
     
     setCurrentDir(reposDir)
@@ -87,7 +91,7 @@ proc updateGitman*() =
     let gitStatus = execCmd("git pull")
     
     if gitStatus != 0:
-        styledEcho styleBright, fgRed, "Error: failed to pull newest commit"
+        styledEcho styleBright, fgRed, "failed to pull newest commit"
     
     styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
     let newCommit = execProcess("git rev-parse HEAD").strip()
@@ -105,7 +109,7 @@ proc updateGitman*() =
 
 proc listRepos*() =
     if not dirExists(reposDir):
-        styledEcho styleBright, fgRed, &"Error: {reposDir} was not found"
+        styledEcho styleBright, fgRed, &"{reposDir} was not found"
         return
 
     styledEcho styleBright, fgCyan, "Installed repos:"
@@ -134,5 +138,5 @@ proc enterRepo*(repoName: string) =
             discard execProcesses([userShell], options = {poParentStreams, poInteractive})
             quit(0)
     
-    styledEcho styleBright, fgRed, &"Error: '{repoName}' was not found"
+    styledEcho styleBright, fgRed, &"'{repoName}' was not found"
 
