@@ -1,5 +1,5 @@
 import std/[strformat, strutils, os, osproc, terminal]
-import build
+import build, config
 
 proc removeRepo*(repoName: string) =
     if repoName == "":
@@ -98,8 +98,7 @@ proc updateGitman*() =
     if oldCommit == newCommit:
         styledEcho styleBright, fgCyan, "No need to rebuild."
     else:
-        let configPath = "gitman" / "gitman.yaml" 
-        if fileExists(configPath):
+        if fileExists(configName):
             buildRepo()
         else:
             styledEcho styleBright, fgYellow, "Config file was not found. Source updated."

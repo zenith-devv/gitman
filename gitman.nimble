@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.8"
+version       = "0.8.1"
 author        = "zenith-devv"
 description   = "A small manager for github repositories written in Nim"
 license       = "MIT"
