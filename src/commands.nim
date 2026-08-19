@@ -18,7 +18,7 @@ proc installCmd*(repo: string) =
                 echo &"Invalid choice: {choice}"
 
     clone(repoUrl)
-    setCurrentDir(repoName)
+    enterRepo(repoName)
     if fileExists(configName):
         buildRepo()
     else:

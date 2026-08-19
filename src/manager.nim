@@ -1,5 +1,5 @@
 import std/[strformat, strutils, os, osproc, terminal]
-import build
+import build, config
 
 proc removeRepo*(repoName: string) =
     if repoName == "":
@@ -68,10 +68,10 @@ proc update*() =
             styledEcho styleBright, fgCyan, "No need to rebuild."
             continue
         
-        if fileExists("gitman.yaml"):
+        if fileExists(&"{configName}"):
             buildRepo()
         else:
-            styledEcho styleBright, fgYellow, "Config file was not found. Source updated."
+            styledEcho styleBright, fgYellow, &"{configName} was not found. Source updated."
     
     styledEcho styleBright, fgGreen, "Finished updating repos"
 
@@ -97,10 +97,10 @@ proc updateGitman*() =
     if oldCommit == newCommit:
         styledEcho styleBright, fgCyan, "No need to rebuild."
     else:
-        if fileExists("gitman.yaml"):
+        if fileExists(&"{configName}"):
             buildRepo()
         else:
-            styledEcho styleBright, fgYellow, "Config file was not found. Source updated."
+            styledEcho styleBright, fgYellow, &"{configName} was not found. Source updated."
         
     styledEcho styleBright, fgGreen, "Finished updating gitman"
 
