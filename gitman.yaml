@@ -1,5 +1,5 @@
 name: "gitman"
-version: "v0.8.4"
+version: "v0.8.5"
 prepare:
   - nimble install --depsOnly -y
 build: 

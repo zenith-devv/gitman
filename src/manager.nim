@@ -123,18 +123,19 @@ proc listRepos*() =
     else:
         styledEcho styleBright, fgCyan, &"\nTotal: {count} repo(s) installed."
 
+proc openShell*() =
+    let userShell = getEnv("SHELL", "/bin/bash")
+    discard execProcesses([userShell], options = {poParentStreams, poInteractive})
+
 proc enterRepo*(repoName: string): bool =
     let target = repoName.toLowerAscii()
     for repoPath in walkDirs(reposDir / "*"):
         let foundRepo = extractFilename(repoPath)
         if foundRepo.toLowerAscii().contains(target):
             styledEcho styleBright, fgCyan, &"Entering '{foundRepo}'"
-            setCurrentDir(reposDir / foundRepo) # Zmieniamy katalog pracy programu
+            setCurrentDir(reposDir / foundRepo)
+            openShell()
             return true
 
     styledEcho styleBright, fgRed, &"'{repoName}' was not found"
     return false
-
-proc openShell*() =
-    let userShell = getEnv("SHELL", "/bin/bash")
-    discard execProcesses([userShell], options = {poParentStreams, poInteractive})
