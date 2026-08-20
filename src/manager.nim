@@ -19,7 +19,7 @@ proc removeRepo*(repoName: string) =
     if foundPath != "" and dirExists(foundPath):
         let actualName = foundPath.extractFilename()
         while true:
-            stdout.styledWrite(styleBright, fgWhite, &"Confirm removing '{actualName}'? [Y/n]: ")
+            stdout.styledWrite(styleBright, fgWhite, &"Confirm removing '{actualName}' [Y/n]: ")
             stdout.flushFile()
 
             let choice = readLine(stdin).toLowerAscii()
@@ -71,7 +71,7 @@ proc update*() =
         if fileExists(&"{configName}"):
             buildRepo()
         else:
-            styledEcho styleBright, fgYellow, &"{configName} was not found. Source updated."
+            styledEcho styleBright, fgYellow, &"{configName} was not found, source updated"
     
     styledEcho styleBright, fgGreen, "Finished updating repos"
 
@@ -100,7 +100,7 @@ proc updateGitman*() =
         if fileExists(&"{configName}"):
             buildRepo()
         else:
-            styledEcho styleBright, fgYellow, &"{configName} was not found. Source updated."
+            styledEcho styleBright, fgYellow, &"{configName} was not found, source updated"
         
     styledEcho styleBright, fgGreen, "Finished updating gitman"
 
@@ -123,18 +123,18 @@ proc listRepos*() =
     else:
         styledEcho styleBright, fgCyan, &"\nTotal: {count} repo(s) installed."
 
-proc enterRepo*(repoName: string) =
+proc enterRepo*(repoName: string): bool =
     let target = repoName.toLowerAscii()
     for repoPath in walkDirs(reposDir / "*"):
         let foundRepo = extractFilename(repoPath)
-        let foundRepoLower = foundRepo.toLowerAscii()
-        if foundRepoLower.contains(target):
+        if foundRepo.toLowerAscii().contains(target):
             styledEcho styleBright, fgCyan, &"Entering '{foundRepo}'"
-            let targetRepo = reposDir / foundRepo
-            setCurrentDir(targetRepo)
-            let userShell = getEnv("SHELL", "/bin/bash")
-            discard execProcesses([userShell], options = {poParentStreams, poInteractive})
-            quit(0)
-    
-    styledEcho styleBright, fgRed, &"'{repoName}' was not found"
+            setCurrentDir(reposDir / foundRepo) # Zmieniamy katalog pracy programu
+            return true
 
+    styledEcho styleBright, fgRed, &"'{repoName}' was not found"
+    return false
+
+proc openShell*() =
+    let userShell = getEnv("SHELL", "/bin/bash")
+    discard execProcesses([userShell], options = {poParentStreams, poInteractive})

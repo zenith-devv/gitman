@@ -1,22 +1,22 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.8.3"
+const version = "0.8.4"
 
 proc printHelp() =
   styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"
   echo "Usage:"
   echo "  gitman <command> [arguments]\n"
   echo "Commands:"
-  echo "  install <repo>     Installs a repo"
-  echo "  remove <repo>      Removes an installed repo"
-  echo "  build              Builds a repo using gitman.yaml"
-  echo "  update             Pulls changes and rebuilds all repos"
-  echo "  list               Lists all installed repos"
-  echo "  search <query>     Searches for a repo"
-  echo "  enter <repo>       Enter the directory of the installed repo"
-  echo "  self-update        Pull the newest commit of gitman and rebuild it"
-  echo "  help               Displays this help message"
+  echo "  clone, cl <repo>       clones a repo"
+  echo "  remove, rm <repo>      Removes a cloned repo"
+  echo "  build, b               Builds a repo using gitman.yaml"
+  echo "  update, up             Pulls changes and rebuilds all repos"
+  echo "  list, ls               Lists all cloned repos"
+  echo "  search, s <query>      Searches for a repo"
+  echo "  enter, e <repo>        Enter the directory of the cloned repo"
+  echo "  self-update, sup       Pull the newest commit of gitman and rebuild it"
+  echo "  help, h                Displays this help message"
 
 proc main() =
     if paramCount() == 0:
@@ -27,25 +27,25 @@ proc main() =
     let repo = if paramCount() >= 2: paramStr(2) else: ""
 
     case command
-    of "install":
-        installCmd(repo)
-    of "remove":
+    of "clone", "cl":
+        cloneCmd(repo)
+    of "remove", "rm":
         removeCmd(repo)
-    of "build":
+    of "build", "b":
         buildCmd()
-    of "update":
+    of "update", "up":
         updateCmd()
-    of "config":
+    of "config", "cfg":
         configCmd()
-    of "list":
+    of "list", "ls":
         listCmd()
-    of "search":
+    of "search", "s":
         searchCmd(repo)
-    of "enter":
+    of "enter", "e":
         enterCmd(repo)
-    of "self-update":
+    of "self-update", "sup":
         selfUpdateCmd()
-    of "help":
+    of "help", "h":
         printHelp()
     else:
         styledEcho styleBright, fgRed, &"Unknown command '{command}'"

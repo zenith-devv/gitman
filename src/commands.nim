@@ -1,11 +1,11 @@
 import std/[strutils, strformat, os, terminal]
 import networking, build, config, manager
 
-proc installCmd*(repo: string) =
+proc cloneCmd*(repo: string) =
     let (repoUrl, repoName, isUrl) = search(repo)
     if not isUrl:
         while true:
-            stdout.styledWrite(styleBright, fgWhite, "Continue installing? [Y/n]: ")
+            stdout.styledWrite(styleBright, fgWhite, "Continue cloning? [Y/n]: ")
             stdout.flushFile()
 
             let choice = readLine(stdin).toLowerAscii()
@@ -18,11 +18,13 @@ proc installCmd*(repo: string) =
                 echo &"Invalid choice: {choice}"
 
     clone(repoUrl)
-    enterRepo(repoName)
-    if fileExists(configName):
-        buildRepo()
-    else:
-        styledEcho styleBright, fgYellow, &"{configName} was not found, keeping source"
+    if enterRepo(repoName):
+        if fileExists(configName):
+            buildRepo()
+        else:
+            styledEcho styleBright, fgYellow, &"'{configName}' was not found, keeping source"
+  
+        openShell()
 
 proc buildCmd*() =
     buildRepo()
@@ -40,7 +42,7 @@ proc listCmd*() =
     listRepos()
 
 proc enterCmd*(repo: string) =
-    enterRepo(repo)
+    discard enterRepo(repo)
 
 proc selfUpdateCmd*() =
     updateGitman()
