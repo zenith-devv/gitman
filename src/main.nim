@@ -1,21 +1,21 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.9.3"
+const version = "0.9.4"
 
 proc printHelp() =
   styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"
   echo "Usage:"
   echo "  gitman <command> [arguments]\n"
   echo "Commands:"
-  echo "  clone, cl <repo>       clones a repo"
-  echo "  remove, rm <repo>      Removes a cloned repo"
-  echo "  build, b               Builds a repo using gitman.yaml"
-  echo "  update, up             Pulls changes and rebuilds all repos"
-  echo "  list, ls               Lists all cloned repos"
-  echo "  search, s <query>      Searches for a repo"
-  echo "  enter, e <repo>        Enter the directory of the cloned repo"
-  echo "  help, h                Displays this help message"
+  echo "  cl <repo>        Clones a repo"
+  echo "  rm <repo>        Removes a cloned repo"
+  echo "  b                Builds a repo using gitman.yaml"
+  echo "  up               Pulls changes and rebuilds all repos"
+  echo "  ls               Lists all cloned repos"
+  echo "  s <query>        Searches for a repo"
+  echo "  cd <repo>        Enter the directory of the cloned repo"
+  echo "  h                Displays this help message"
 
 proc main() =
     if paramCount() == 0:
@@ -26,23 +26,23 @@ proc main() =
     let repo = if paramCount() >= 2: paramStr(2) else: ""
 
     case command
-    of "clone", "cl":
+    of "cl":
         cloneCmd(repo)
-    of "remove", "rm":
+    of "rm":
         removeCmd(repo)
-    of "build", "b":
+    of "b":
         buildCmd()
-    of "update", "up":
+    of "up":
         updateCmd()
-    of "config", "cfg":
+    of "cfg":
         configCmd()
-    of "list", "ls":
+    of "ls":
         listCmd()
-    of "search", "s":
+    of "s":
         searchCmd(repo)
-    of "enter", "e":
+    of "cd":
         enterCmd(repo)
-    of "help", "h":
+    of "h":
         printHelp()
     else:
         styledEcho styleBright, fgRed, &"Unknown command '{command}'"
