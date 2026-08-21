@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 NAME="gitman"
-VERSION="0.9"
+VERSION="0.9.1"
 
 DEPENDS_PORTAGE=()
 DEPENDS_PACMAN=()

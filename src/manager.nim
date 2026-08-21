@@ -3,7 +3,7 @@ import build, config
 
 proc removeRepo*(repoName: string) =
     if repoName == "":
-        styledEcho styleBright, fgRed, "no repo specified"
+        styledEcho styleBright, fgRed, "No repo specified"
         quit(1)
 
     let lowerTarget = repoName.toLowerAscii()
@@ -119,7 +119,7 @@ proc listRepos*() =
 
 proc openShell*() =
     let userShell = getEnv("SHELL", "/bin/bash")
-    discard execProcesses([userShell], options = {poParentStreams, poInteractive})
+    discard execCmd(userShell)
 
 proc enterRepo*(repoName: string): bool =
     let target = repoName.toLowerAscii()
@@ -128,7 +128,6 @@ proc enterRepo*(repoName: string): bool =
         if foundRepo.toLowerAscii().contains(target):
             styledEcho styleBright, fgCyan, &"Entering '{foundRepo}'"
             setCurrentDir(reposDir / foundRepo)
-            openShell()
             return true
 
     styledEcho styleBright, fgRed, &"'{repoName}' was not found"

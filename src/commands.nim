@@ -23,7 +23,8 @@ proc cloneCmd*(repo: string) =
             buildRepo()
         else:
             styledEcho styleBright, fgYellow, &"'{configName}' was not found, keeping source"
-  
+        openShell()
+
 proc buildCmd*() =
     buildRepo()
 

@@ -97,7 +97,13 @@ proc buildRepo*() =
 
     installDepends()
 
-    styledEcho styleBright, fgCyan, &"Building '{name} {version}'"
+    if name.len != 0 and version.len != 0:
+        styledEcho styleBright, fgCyan, &"Building '{name} {version}'..."
+    elif name.len != 0:
+        styledEcho styleBright, fgCyan, &"Building '{name}'..."
+    else:
+        styledEcho styleBright, fgCyan, "Building repository..."
+
     var ranAnyStage = false
     if runStage(skPrepare): ranAnyStage = true
     if runStage(skBuild):   ranAnyStage = true
