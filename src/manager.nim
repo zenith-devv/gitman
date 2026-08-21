@@ -47,9 +47,6 @@ proc update*() =
     for repoPath in walkDirs(reposDir / "*"):
         let repoName = extractFilename(repoPath)
 
-        if repoName == "gitman":
-            continue
-
         styledEcho styleBright, fgCyan, &"Entering '{repoName}'"
         setCurrentDir(repoPath)
 
@@ -71,33 +68,6 @@ proc update*() =
             styledEcho styleBright, fgYellow, &"{configName} was not found, source updated"
 
     styledEcho styleBright, fgGreen, "Finished updating repos"
-
-proc updateGitman*() =
-    if not dirExists(reposDir):
-        styledEcho styleBright, fgRed, &"{reposDir} was not found"
-        return
-
-    setCurrentDir(reposDir)
-    styledEcho styleBright, fgCyan, "Updating gitman..."
-    setCurrentDir("gitman")
-
-    let oldCommit = execProcess("git rev-parse HEAD").strip()
-    let gitStatus = execCmd("git pull")
-
-    if gitStatus != 0:
-        styledEcho styleBright, fgRed, "failed to pull newest commit"
-
-    let newCommit = execProcess("git rev-parse HEAD").strip()
-    if oldCommit == newCommit:
-        styledEcho styleBright, fgCyan, "No need to rebuild."
-    else:
-        if fileExists(&"{configName}"):
-            buildRepo()
-        else:
-            styledEcho styleBright, fgYellow, &"{configName} was not found, source updated"
-
-    styledEcho styleBright, fgGreen, "Finished updating gitman"
-
 
 proc listRepos*() =
     if not dirExists(reposDir):

@@ -44,8 +44,5 @@ proc enterCmd*(repo: string) =
     discard enterRepo(repo)
     openShell()
 
-proc selfUpdateCmd*() =
-    updateGitman()
-
 proc searchCmd*(query: string) =
     discard search(query)
