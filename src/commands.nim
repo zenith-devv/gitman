@@ -42,6 +42,7 @@ proc listCmd*() =
 
 proc enterCmd*(repo: string) =
     discard enterRepo(repo)
+    openShell()
 
 proc selfUpdateCmd*() =
     updateGitman()

@@ -88,12 +88,12 @@ proc runStage*(stage: StageKind): bool =
     return true
 
 proc buildRepo*() =
-    let name = loadConfigVar("gitman.sh", "NAME")
-    let version = loadConfigVar("gitman.sh", "VERSION")
-
     if not fileExists("gitman.sh"):
         styledEcho styleBright, fgRed, "gitman.sh not found"
         quit(1)
+
+    let name = loadConfigVar("gitman.sh", "NAME")
+    let version = loadConfigVar("gitman.sh", "VERSION")
 
     installDepends()
 
