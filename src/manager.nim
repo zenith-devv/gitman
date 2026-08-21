@@ -53,46 +53,40 @@ proc update*() =
         styledEcho styleBright, fgCyan, &"Entering '{repoName}'"
         setCurrentDir(repoPath)
 
-        styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
         let oldCommit = execProcess("git rev-parse HEAD").strip()
-        styledEcho styleBright, fgWhite, "> git pull"
         let gitStatus = execCmd("git pull")
-        
+
         if gitStatus != 0:
             styledEcho styleBright, fgYellow, &"Could not pull '{repoName}'. Skipping"
             continue
-        
-        styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
+
         let newCommit = execProcess("git rev-parse HEAD").strip()
         if oldCommit == newCommit:
             styledEcho styleBright, fgCyan, "No need to rebuild."
             continue
-        
+
         if fileExists(&"{configName}"):
             buildRepo()
         else:
             styledEcho styleBright, fgYellow, &"{configName} was not found, source updated"
-    
+
     styledEcho styleBright, fgGreen, "Finished updating repos"
 
 proc updateGitman*() =
     if not dirExists(reposDir):
         styledEcho styleBright, fgRed, &"{reposDir} was not found"
         return
-    
+
     setCurrentDir(reposDir)
     styledEcho styleBright, fgCyan, "Updating gitman..."
     setCurrentDir("gitman")
 
-    styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
     let oldCommit = execProcess("git rev-parse HEAD").strip()
-    styledEcho styleBright, fgWhite, "> git pull"
     let gitStatus = execCmd("git pull")
-    
+
     if gitStatus != 0:
         styledEcho styleBright, fgRed, "failed to pull newest commit"
-    
-    styledEcho styleBright, fgWhite, "> git rev-parse HEAD"
+
     let newCommit = execProcess("git rev-parse HEAD").strip()
     if oldCommit == newCommit:
         styledEcho styleBright, fgCyan, "No need to rebuild."
@@ -101,7 +95,7 @@ proc updateGitman*() =
             buildRepo()
         else:
             styledEcho styleBright, fgYellow, &"{configName} was not found, source updated"
-        
+
     styledEcho styleBright, fgGreen, "Finished updating gitman"
 
 
@@ -112,7 +106,7 @@ proc listRepos*() =
 
     styledEcho styleBright, fgCyan, "Installed repos:"
     var count = 0
-  
+
     for repoPath in walkDirs(reposDir / "*"):
         let repoName = extractFilename(repoPath)
         styledEcho styleBright, fgWhite, &"  - {repoName}"
