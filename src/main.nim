@@ -1,21 +1,22 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.9.4"
+const version = "0.9.5"
 
 proc printHelp() =
-  styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"
-  echo "Usage:"
-  echo "  gitman <command> [arguments]\n"
-  echo "Commands:"
-  echo "  cl <repo>        Clones a repo"
-  echo "  rm <repo>        Removes a cloned repo"
-  echo "  b                Builds a repo using gitman.yaml"
-  echo "  up               Pulls changes and rebuilds all repos"
-  echo "  ls               Lists all cloned repos"
-  echo "  s <query>        Searches for a repo"
-  echo "  cd <repo>        Enter the directory of the cloned repo"
-  echo "  h                Displays this help message"
+    styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"
+    echo "Usage:"
+    echo "  gitman <command> [arguments]\n"
+    echo "Commands:"
+    echo "  cl, clean <repo>        Clones a repo"
+    echo "  rm, remove <repo>       Removes a cloned repo"
+    echo "  b, build                Builds a repo using gitman.yaml"
+    echo "  up, update              Pulls changes and rebuilds all repos"
+    echo "  ls, list                Lists all cloned repos"
+    echo "  s, search <query>       Searches for a repo"
+    echo "  e, enter <repo>         Enter the directory of the cloned repo"
+    echo "  cfg, config             Create gitman.yaml template"
+    echo "  h, help                 Displays this help message"
 
 proc main() =
     if paramCount() == 0:
@@ -26,23 +27,23 @@ proc main() =
     let repo = if paramCount() >= 2: paramStr(2) else: ""
 
     case command
-    of "cl":
+    of "cl", "clean":
         cloneCmd(repo)
-    of "rm":
+    of "rm", "remove":
         removeCmd(repo)
-    of "b":
+    of "b", "build":
         buildCmd()
-    of "up":
+    of "up", "update":
         updateCmd()
-    of "cfg":
+    of "cfg", "config":
         configCmd()
-    of "ls":
+    of "ls", "list":
         listCmd()
-    of "s":
+    of "s", "search":
         searchCmd(repo)
-    of "cd":
+    of "e", "enter":
         enterCmd(repo)
-    of "h":
+    of "h", "help":
         printHelp()
     else:
         styledEcho styleBright, fgRed, &"Unknown command '{command}'"
