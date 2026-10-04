@@ -1,10 +1,10 @@
 [package]
 name = "gitman"
-version = "0.10.0"
+version = "0.10.1"
 
 [setup]
 commands = [
-    "nimble install --depsOnly -y",
+    "nimble install parsetoml",
     'nim c -f -d:release -d:ssl -o:"$HOME/.local/bin/gitman" src/main.nim'
 ]
 
