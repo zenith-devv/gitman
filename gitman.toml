@@ -1,0 +1,19 @@
+[package]
+name = "gitman"
+version = "0.10.0"
+
+[setup]
+commands = [
+    "nimble install --depsOnly -y",
+    'nim c -f -d:release -d:ssl -o:"$HOME/.local/bin/gitman" src/main.nim'
+]
+
+[dependencies]
+zypper = []
+pkg = []
+pacman = []
+apk = []
+portage = []
+apt = []
+dnf = []
+xbps = []

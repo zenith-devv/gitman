@@ -1,72 +1,96 @@
-import std/[os, osproc, terminal, strformat, strutils]
+import std/[os, tables, terminal, strformat, strutils, sequtils]
+export tables
+import parsetoml
 
-const configName* = "gitman.sh"
+const configName* = "gitman.toml"
+
+type
+    RepoConfig* = object
+        name*: string
+        version*: string
+        dependencies*: Table[string, seq[string]]
+        commands*: seq[string]
 
 proc createConfig*() =
     if not fileExists(configName):
-        let templateContent = """#!/usr/bin/env bash
+        let defaultDeps = {
+            "portage": newSeq[string](),
+            "pacman": newSeq[string](),
+            "apt": newSeq[string](),
+            "dnf": newSeq[string](),
+            "zypper": newSeq[string](),
+            "apk": newSeq[string](),
+            "xbps": newSeq[string](),
+            "pkg": newSeq[string]()
+        }.toTable
 
-NAME="untitled"
-VERSION=""
+        let config = RepoConfig(
+            name: "untitled",
+            version: "0.1.0",
+            dependencies: defaultDeps,
+            commands: @[]
+        )
 
-DEPENDS_PORTAGE=()
-DEPENDS_PACMAN=()
-DEPENDS_APT=()
-DEPENDS_DNF=()
-DEPENDS_ZYPPER=()
-DEPENDS_APK=()
-DEPENDS_XBPS=()
-DEPENDS_PKG=()
+        var lines: seq[string] = @[]
 
-prepare() {
-    :
-}
+        lines.add("[package]")
+        lines.add(&"name = \"{config.name}\"")
+        lines.add(&"version = \"{config.version}\"")
+        lines.add("")
+        lines.add("[setup]")
+        lines.add("commands = []")
+        lines.add("")
+        lines.add("[dependencies]")
 
-build() {
-    :
-}
+        for pm, pkgs in config.dependencies.pairs:
+            if pkgs.len == 0:
+                lines.add(&"{pm} = []")
+            else:
+                let formattedPkgs = pkgs.mapIt(&"\"{it}\"").join(", ")
+                lines.add(&"{pm} = [{formattedPkgs}]")
 
-check() {
-    :
-}
+        let content = lines.join("\n") & "\n"
 
-install() {
-    :
-}
-"""
         try:
-            writeFile(configName, templateContent)
-            setFilePermissions(configName, {fpUserRead, fpUserWrite, fpUserExec, fpGroupRead, fpGroupExec, fpOthersRead, fpOthersExec})
+            writeFile(configName, content)
             styledEcho styleBright, fgCyan, &"Created {configName} template"
-        except OSError:
-            styledEcho styleBright, fgRed, &"Could not create {configName}"
+        except OSError as e:
+            styledEcho styleBright, fgRed, &"Failed to create {configName}: {e.msg}"
             quit(1)
     else:
         styledEcho styleBright, fgRed, &"{configName} already exists, will not overwrite"
 
-proc loadConfigVar*(filePath: string, varName: string): string =
+proc loadConfig*(filePath: string = configName): RepoConfig =
     if not fileExists(filePath):
-        styledEcho styleBright, fgRed, &"{filePath} not found"
-        return ""
+        styledEcho styleBright, fgRed, &"{filePath} was not found"
+        quit(1)
 
-    let bashCmd = &"bash -c 'source {quoteShell(filePath)} 2>/dev/null && echo \"${varName}\"'"
-    let (output, exitCode) = execCmdEx(bashCmd)
+    var config: RepoConfig
+    config.dependencies = initTable[string, seq[string]]()
+    config.commands = @[]
 
-    if exitCode == 0:
-        return output.strip()
+    try:
+        let tomlData = parsetoml.parseFile(filePath)
+        if tomlData.hasKey("package"):
+            let pkg = tomlData["package"]
+            config.name = pkg["name"].getStr("untitled")
+            config.version = pkg["version"].getStr("0.1.0")
 
-    return ""
+        if tomlData.hasKey("setup"):
+            for cmdNode in tomlData["setup"]["commands"].getElems():
+                config.commands.add(cmdNode.getStr())
 
-proc loadConfigArray*(filePath: string, arrayName: string): seq[string] =
-    if not fileExists(filePath):
-        styledEcho styleBright, fgRed, &"{filePath} not found"
-        return @[]
+        if tomlData.hasKey("dependencies"):
+            let deps = tomlData["dependencies"]
+            for pm, pkgsNode in deps.getTable().pairs:
+                var pkgList: seq[string] = @[]
+                for item in pkgsNode.getElems():
+                    pkgList.add(item.getStr())
+                config.dependencies[pm] = pkgList
 
-    let bashCmd = &"bash -c 'source {quoteShell(filePath)} 2>/dev/null && eval \"echo \\\"\\${{{arrayName}[@]}}\\\"\"'"
-    let (output, exitCode) = execCmdEx(bashCmd)
+        styledEcho styleBright, fgGreen, &"Loaded {filePath}"
+        return config
 
-    if exitCode == 0 and output.strip().len > 0:
-        return output.strip().splitWhitespace()
-
-    return @[]
-
+    except Exception as e:
+        styledEcho styleBright, fgRed, &"Error reading {filePath}: {e.msg}"
+        quit(1)

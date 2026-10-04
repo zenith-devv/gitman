@@ -1,15 +1,8 @@
-import std/[strformat, strutils, os, osproc, terminal]
+import std/[strformat, strutils, os, osproc, terminal, tables]
 import config
 
 let reposDir* = getHomeDir() / ".local/share/gitman/repos"
 let binDir* = getHomeDir() / ".local/bin"
-
-type
-    StageKind* = enum
-        skPrepare = "prepare"
-        skBuild = "build"
-        skCheck = "check"
-        skInstall = "install"
 
 proc clone*(url: string) =
     if dirExists(reposDir):
@@ -29,7 +22,7 @@ proc getNativeDistro(): string =
                 return line.split("=")[1].strip(chars = {'"', '\''})
     return ""
 
-proc installDepends*() =
+proc installDepends*(cfg: RepoConfig) =
     let distro = $getNativeDistro()
     let (pmCmd, pmName) = case distro:
     of "debian", "ubuntu", "elementary", "zorin", "deepin", "lxle", "mint", "pop",
@@ -58,8 +51,10 @@ proc installDepends*() =
         styledEcho styleBright, fgRed, &"Your package manager is not supported by gitman. Please build the repo manually."
         quit(1)
 
-    let arrayVarName = &"DEPENDS_{pmName.toUpperAscii()}"
-    let depsSeq = loadConfigArray("gitman.sh", arrayVarName)
+    var depsSeq: seq[string] = @[]
+    if cfg.dependencies.hasKey(pmName):
+        depsSeq = cfg.dependencies[pmName]
+
     let deps = depsSeq.join(" ")
 
     if deps.len == 0:
@@ -73,50 +68,39 @@ proc installDepends*() =
             styledEcho styleBright, fgRed, "Failed to install dependencies"
             quit(1)
 
-proc runStage*(stage: StageKind): bool =
-    let checkCmd = &"bash -c 'source gitman.sh 2>/dev/null && declare -f {$stage} >/dev/null'"
-    if execCmd(checkCmd) != 0:
-        return false
+proc runCommands*(cfg: RepoConfig) =
+    if cfg.commands.len == 0:
+        styledEcho styleBright, fgYellow, &"No commands to run in {configName}"
+        return
 
-    let runCmd = &"bash -c 'set -e; source gitman.sh; set -x; {$stage}'"
-    let exitCode = execCmd(runCmd)
-
-    if exitCode != 0:
-        styledEcho styleBright, fgRed, &"{$stage} failed"
-        quit(1)
-
-    return true
+    for idx, cmd in cfg.commands:
+        styledEcho styleBright, fgWhite, &"[{idx + 1}/{cfg.commands.len}]", resetStyle, &" {cmd}"
+        let exitCode = execCmd(cmd)
+        if exitCode != 0:
+            styledEcho styleBright, fgRed, &"Command failed: {cmd}"
+            quit(exitCode)
 
 proc buildRepo*() =
-    if not fileExists("gitman.sh"):
-        styledEcho styleBright, fgRed, "gitman.sh not found"
+    if not fileExists(configName):
+        styledEcho styleBright, fgRed, &"{configName} not found"
         quit(1)
 
-    let name = loadConfigVar("gitman.sh", "NAME")
-    let version = loadConfigVar("gitman.sh", "VERSION")
+    let cfg = loadConfig(configName)
 
-    installDepends()
+    installDepends(cfg)
 
-    if name.len != 0 and version.len != 0:
-        styledEcho styleBright, fgCyan, &"Building '{name} {version}'..."
-    elif name.len != 0:
-        styledEcho styleBright, fgCyan, &"Building '{name}'..."
+    if cfg.name.len != 0 and cfg.version.len != 0:
+        styledEcho styleBright, fgCyan, &"Building '{cfg.name} {cfg.version}'..."
+    elif cfg.name.len != 0:
+        styledEcho styleBright, fgCyan, &"Building '{cfg.name}'..."
     else:
         styledEcho styleBright, fgCyan, "Building repository..."
 
-    var ranAnyStage = false
-    if runStage(skPrepare): ranAnyStage = true
-    if runStage(skBuild):   ranAnyStage = true
-    if runStage(skCheck):   ranAnyStage = true
-    if runStage(skInstall): ranAnyStage = true
+    runCommands(cfg)
 
-    if not ranAnyStage:
-        styledEcho styleBright, fgYellow, "All stages are empty or missing. Nothing to do."
-        quit(0)
-
-    if name.len != 0 and version.len != 0:
-        styledEcho styleBright, fgGreen, &"Finished building '{name} {version}'"
-    elif name.len != 0:
-        styledEcho styleBright, fgGreen, &"Finished building '{name}'"
+    if cfg.name.len != 0 and cfg.version.len != 0:
+        styledEcho styleBright, fgGreen, &"Finished building '{cfg.name} {cfg.version}'"
+    elif cfg.name.len != 0:
+        styledEcho styleBright, fgGreen, &"Finished building '{cfg.name}'"
     else:
         styledEcho styleBright, fgGreen, "Finished building repository"
