@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 NAME="gitman"
-VERSION="0.9.4"
+VERSION="0.9.6"
 
 DEPENDS_PORTAGE=()
 DEPENDS_PACMAN=()
@@ -13,17 +13,17 @@ DEPENDS_XBPS=()
 DEPENDS_PKG=()
 
 prepare() {
-    :
+  :
 }
 
 build() {
-    nim c -f -d:release -d:ssl -o:"$HOME/.local/bin/gitman" src/main.nim
+  nim c -f -d:release -d:ssl -o:"$HOME/.local/bin/gitman" src/main.nim
 }
 
 check() {
-    :
+  :
 }
 
 install() {
-    :
+  :
 }

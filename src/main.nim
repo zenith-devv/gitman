@@ -1,14 +1,14 @@
 import std/[os, terminal, strformat]
 import commands
 
-const version = "0.9.5"
+const version = "0.9.6"
 
 proc printHelp() =
     styledEcho styleBright, fgCyan, &"gitman v{version} - git repo manager\n"
     echo "Usage:"
     echo "  gitman <command> [arguments]\n"
     echo "Commands:"
-    echo "  cl, clean <repo>        Clones a repo"
+    echo "  cl, clone <repo>        Clones a repo"
     echo "  rm, remove <repo>       Removes a cloned repo"
     echo "  b, build                Builds a repo using gitman.yaml"
     echo "  up, update              Pulls changes and rebuilds all repos"
@@ -27,7 +27,7 @@ proc main() =
     let repo = if paramCount() >= 2: paramStr(2) else: ""
 
     case command
-    of "cl", "clean":
+    of "cl", "clone":
         cloneCmd(repo)
     of "rm", "remove":
         removeCmd(repo)
