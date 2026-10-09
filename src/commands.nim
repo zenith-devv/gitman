@@ -27,6 +27,7 @@ proc cloneCmd*(repo: string) =
 
 proc buildCmd*() =
     buildRepo()
+    openShell()
 
 proc configCmd*() =
     createConfig()

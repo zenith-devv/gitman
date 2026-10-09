@@ -75,10 +75,17 @@ proc runCommands*(cfg: RepoConfig) =
 
     for idx, cmd in cfg.commands:
         styledEcho styleBright, fgWhite, &"[{idx + 1}/{cfg.commands.len}]", resetStyle, &" {cmd}"
-        let exitCode = execCmd(cmd)
-        if exitCode != 0:
-            styledEcho styleBright, fgRed, &"Command failed: {cmd}"
-            quit(exitCode)
+        if cmd.contains("cd "):
+            let path = cmd[3..^1].strip()
+            try:
+                setCurrentDir(path)
+            except OSError as e:
+                styledEcho styleBright, fgRed, "Error: ", resetStyle, e.msg
+        else:
+            let exitCode = execCmd(cmd)
+            if exitCode != 0:
+                styledEcho styleBright, fgRed, &"Command failed: {cmd}"
+                quit(exitCode)
 
 proc buildRepo*() =
     if not fileExists(configName):
